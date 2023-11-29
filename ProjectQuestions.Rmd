@@ -1,0 +1,152 @@
+---
+title: "samples"
+author: "Erica"
+date: "2023-11-05"
+output: html_document
+---
+
+```{r}
+setwd("C:/Users/enxya/Downloads")
+
+#### importing data
+data_16 = read.csv("JC-201605-citibike-tripdata.csv//JC-201605-citibike-tripdata.csv")
+data_17 = read.csv("JC-201705-citibike-tripdata.csv//JC-201705-citibike-tripdata.csv")
+data_18 = read.csv("JC-201805-citibike-tripdata.csv//JC-201805-citibike-tripdata.csv")
+data_19 = read.csv("JC-201905-citibike-tripdata.csv//JC-201905-citibike-tripdata.csv")
+data_20 = read.csv("JC-202005-citibike-tripdata.csv//JC-202005-citibike-tripdata.csv")
+data_21 = read.csv("JC-202105-citibike-tripdata.csv//JC-202105-citibike-tripdata.csv")
+data_22 = read.csv("JC-202205-citibike-tripdata.csv//JC-202205-citibike-tripdata.csv")
+data_23 = read.csv("JC-202305-citibike-tripdata.csv//JC-202305-citibike-tripdata.csv")
+
+# colnames(data_16) to check, check these column names to ensure match then bind will work
+# colnames(data_17) 
+# colnames(data_21)
+colnames(data_16)= colnames(data_17)
+data_16_20 = rbind(data_16, data_17, data_18, data_19, data_20)
+data_21_23 = rbind(data_21, data_22, data_23)
+
+## homogenize the column name
+
+colnames(data_16_20) = c("tripduration", "started_at", "ended_at", 
+                         "start_station_id", "start_station_name", "start_lat", "start_lng",
+                         "end_station_id", "end_station_name", "end_lat", "end_lng", 
+                         "bikeid",  "member_casual", "birth.year","gender" )
+
+#### filter out the common column and join the data sets
+library(dplyr)
+
+data_16_20 = data_16_20 %>% dplyr::select("started_at", "ended_at", 
+                                          "start_station_id", "start_station_name", "start_lat", "start_lng",
+                                          "end_station_id", "end_station_name", "end_lat", "end_lng", 
+                                          "member_casual",)
+
+data_21_23 = data_21_23 %>% dplyr::select("started_at", "ended_at", 
+                                          "start_station_id", "start_station_name", "start_lat", "start_lng",
+                                          "end_station_id", "end_station_name", "end_lat", "end_lng", 
+                                          "member_casual",)
+data_all = rbind(data_16_20, data_21_23)
+
+```
+```{r}
+
+# Filter for 'casual' and 'member' riders
+filtered_data <- data_all %>%
+  filter(member_casual %in% c('casual', 'member'))
+
+# Group and count by day of the week and 'member_casual'
+ride_count <- filtered_data %>%
+  mutate(day_of_week = factor(weekdays(started_at), levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))) %>%
+  group_by(day_of_week, member_casual, .drop = TRUE) %>%
+  summarize(count = n(), .groups = 'drop_last')
+
+# Create a bar chart to visualize the relationship
+ggplot(ride_count, aes(x = day_of_week, y = count, fill = member_casual)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Relationship Between Day of the Week and Member vs. Casual Rides",
+       x = "Day of the Week", y = "Ride Count",
+       fill = "Member or Casual") +
+  scale_x_discrete(drop = FALSE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+```{r}
+
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+
+# Assuming you have a dataset named 'data_all' with columns 'start_station_name', 'end_station_name', 'start_lat', 'start_lng', 'end_lat', 'end_lng', 'started_at', and 'ended_at'
+
+# Convert 'started_at' and 'ended_at' to datetime format
+data_all$started_at <- as.POSIXct(data_all$started_at, format = "%Y-%m-%d %H:%M:%S")
+data_all$ended_at <- as.POSIXct(data_all$ended_at, format = "%Y-%m-%d %H:%M:%S")
+
+# Extract the hour of the day as a numeric value
+data_all$start_hour_of_day <- hour(data_all$started_at)
+data_all$end_hour_of_day <- hour(data_all$ended_at)
+
+# Group and count by start station, hour of the day
+start_station_usage <- data_all %>%
+  select(start_station_name, start_lat, start_lng, start_hour_of_day) %>%
+  group_by(start_station_name, start_lat, start_lng, start_hour_of_day) %>%
+  summarise(start_count = n(), .groups = "drop")
+
+# Group and count by end station, hour of the day
+end_station_usage <- data_all %>%
+  select(end_station_name, end_lat, end_lng, end_hour_of_day) %>%
+  group_by(end_station_name, end_lat, end_lng, end_hour_of_day) %>%
+  summarise(end_count = n(), .groups = "drop")
+
+# Create visualizations to explore usage patterns
+# For example, you can create scatter plots or maps to visualize station usage patterns based on geographic coordinates and times of the day.
+
+# Scatter plot example for start stations
+ggplot(start_station_usage, aes(x = start_lat, y = start_lng, color = start_hour_of_day)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Start Station Usage by Hour of the Day",
+       x = "Latitude", y = "Longitude",
+       color = "Hour of the Day")
+```
+
+```{r}
+# Assuming you have loaded your data into a variable named 'data_all'
+
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+
+# Data Preparation
+data_all$start_hour <- as.POSIXlt(data_all$started_at)$hour # Extract the hour from 'started_at' timestamp
+
+# Calculate ride duration as the time difference in seconds
+data_all$ride_duration <- as.numeric(difftime(data_all$ended_at, data_all$started_at, units = "secs"))
+
+# Filter out rows with missing values in member_casual column
+data_all <- data_all %>% 
+  filter(!is.na(member_casual))
+
+# Ensure member_casual column contains only 'member' and 'casual' levels
+data_all$member_casual <- factor(data_all$member_casual, levels = c("member", "casual"))
+
+# Group by day of the week, starting station, and rider type
+ride_duration_by_day_station <- data_all %>%
+  group_by(day_of_week = weekdays(as.Date(started_at)), 
+           start_station_name, 
+           member_casual) %>%
+  summarise(mean_ride_duration = mean(ride_duration, na.rm = TRUE), .groups = "drop")
+
+# Remove rows with NA values if any
+ride_duration_by_day_station <- na.omit(ride_duration_by_day_station)
+
+# Create a plot
+ggplot(ride_duration_by_day_station, aes(x = day_of_week, y = mean_ride_duration, fill = member_casual)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Average Ride Duration by Day and Rider Type",
+       x = "Day of the Week", y = "Average Ride Duration (seconds)",
+       fill = "Rider Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = c("member" = "blue", "casual" = "red"))
+
+```
