@@ -1,0 +1,18 @@
+# Filter for 'casual' and 'member' riders
+filtered_data <- data_all %>%
+  filter(member_casual %in% c('casual', 'member'))
+
+# Group and count by day of the week and 'member_casual'
+ride_count <- filtered_data %>%
+  mutate(day_of_week = factor(weekdays(started_at), levels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))) %>%
+  group_by(day_of_week, member_casual, .drop = TRUE) %>%
+  summarize(count = n(), .groups = 'drop_last')
+
+# Create a bar chart to visualize the relationship
+ggplot(ride_count, aes(x = day_of_week, y = count, fill = member_casual)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Relationship Between Day of the Week and Member vs. Casual Rides",
+       x = "Day of the Week", y = "Ride Count",
+       fill = "Member or Casual") +
+  scale_x_discrete(drop = FALSE) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
