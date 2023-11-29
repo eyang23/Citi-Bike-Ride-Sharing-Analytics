@@ -1,0 +1,18 @@
+Purpose: 
+To explore the correlation between the preferred days of the week for bike rides between members vs casual riders.  
+Is there a correlation between the preferred days of the week for bike rides between members vs. casual riders?
+
+Why is this useful?
+There are patterns in bike usage that can be based on geography and location. Bike usage might only be for those commuting to 
+and from work on weekdays vs a spike in bike activity during weekends when people go out for a longer period of time. 
+Understanding these patterns can be valuable in business situations for roles related to urban planning, transportation management, 
+or even for businesses directly involved in the bike-sharing industry. An example would be if the business desires to convert the 
+casual riders to upgrade to members and wants to know the best days for heavy advertisement or recruitment. 
+
+Types of Business Utilization:
+Urban Planners: Knowing when and where people tend to use bikes can inform the development of bike lanes, parking facilities, or even the placement of bike-sharing stations.
+Transportation Companies: Businesses offering bike-sharing services can optimize their operations by deploying more bikes or adjusting pricing based on peak usage times and popular locations.
+Marketing and Sales: Retailers selling bikes or bike-related accessories can tailor their marketing campaigns, discounts, or promotions to align with the days where bike usage is highest.
+Data Analysts and Researchers: Professionals in these roles can use this information to conduct deeper analysis, identify trends, and make predictions about future bike usage patterns.
+Tourism Industry: In tourist-heavy areas, understanding bike usage patterns can help tour companies plan routes and schedules for bike tours more effectively.
+
