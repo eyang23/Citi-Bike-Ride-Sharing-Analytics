@@ -1,0 +1,38 @@
+# Assuming you have loaded your data into a variable named 'data_all'
+
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+
+# Data Preparation
+data_all$start_hour <- as.POSIXlt(data_all$started_at)$hour # Extract the hour from 'started_at' timestamp
+
+# Calculate ride duration as the time difference in seconds
+data_all$ride_duration <- as.numeric(difftime(data_all$ended_at, data_all$started_at, units = "secs"))
+
+# Filter out rows with missing values in member_casual column
+data_all <- data_all %>% 
+  filter(!is.na(member_casual))
+
+# Ensure member_casual column contains only 'member' and 'casual' levels
+data_all$member_casual <- factor(data_all$member_casual, levels = c("member", "casual"))
+
+# Group by day of the week, starting station, and rider type
+ride_duration_by_day_station <- data_all %>%
+  group_by(day_of_week = weekdays(as.Date(started_at)), 
+           start_station_name, 
+           member_casual) %>%
+  summarise(mean_ride_duration = mean(ride_duration, na.rm = TRUE), .groups = "drop")
+
+# Remove rows with NA values if any
+ride_duration_by_day_station <- na.omit(ride_duration_by_day_station)
+
+# Create a plot
+ggplot(ride_duration_by_day_station, aes(x = day_of_week, y = mean_ride_duration, fill = member_casual)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Average Ride Duration by Day and Rider Type",
+       x = "Day of the Week", y = "Average Ride Duration (seconds)",
+       fill = "Rider Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = c("member" = "blue", "casual" = "red"))
