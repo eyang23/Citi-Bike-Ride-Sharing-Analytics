@@ -1,0 +1,36 @@
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+
+# Assuming you have a dataset named 'data_all' with columns 'start_station_name', 'end_station_name', 'start_lat', 'start_lng', 'end_lat', 'end_lng', 'started_at', and 'ended_at'
+
+# Convert 'started_at' and 'ended_at' to datetime format
+data_all$started_at <- as.POSIXct(data_all$started_at, format = "%Y-%m-%d %H:%M:%S")
+data_all$ended_at <- as.POSIXct(data_all$ended_at, format = "%Y-%m-%d %H:%M:%S")
+
+# Extract the hour of the day as a numeric value
+data_all$start_hour_of_day <- hour(data_all$started_at)
+data_all$end_hour_of_day <- hour(data_all$ended_at)
+
+# Group and count by start station, hour of the day
+start_station_usage <- data_all %>%
+  select(start_station_name, start_lat, start_lng, start_hour_of_day) %>%
+  group_by(start_station_name, start_lat, start_lng, start_hour_of_day) %>%
+  summarise(start_count = n(), .groups = "drop")
+
+# Group and count by end station, hour of the day
+end_station_usage <- data_all %>%
+  select(end_station_name, end_lat, end_lng, end_hour_of_day) %>%
+  group_by(end_station_name, end_lat, end_lng, end_hour_of_day) %>%
+  summarise(end_count = n(), .groups = "drop")
+
+# Create visualizations to explore usage patterns
+# For example, you can create scatter plots or maps to visualize station usage patterns based on geographic coordinates and times of the day.
+
+# Scatter plot example for start stations
+ggplot(start_station_usage, aes(x = start_lat, y = start_lng, color = start_hour_of_day)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Start Station Usage by Hour of the Day",
+       x = "Latitude", y = "Longitude",
+       color = "Hour of the Day")
